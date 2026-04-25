@@ -6,9 +6,44 @@ from datetime import datetime
 from collections import defaultdict
 from functools import wraps
 
+from flask import Flask
+import sqlite3, hashlib
+
 app = Flask(__name__)
-app.secret_key = secrets.token_hex(32)
-DB_PATH = os.path.join(os.path.dirname(__file__), 'gastos.db')
+
+# ── BASE DE DATOS ─────────────────────
+DB_PATH = "database.db"
+
+def get_db():
+    conn = sqlite3.connect(DB_PATH)
+    return conn
+
+def init_db():
+    conn = get_db()
+    c = conn.cursor()
+
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            created_at TEXT DEFAULT (datetime('now'))
+        )
+    ''')
+
+    conn.commit()
+    conn.close()
+
+# ── RUTA PRINCIPAL ─────────────────────
+@app.route("/")
+def home():
+    return "Hola, estoy online 🚀"
+
+# ── INICIO ─────────────────────────────
+if __name__ == "__main__":
+    init_db()
+    app.run(host="0.0.0.0", port=10000)
 
 # ── BD ──────────────────────────────────────────────────────────────────────
 def get_db():
